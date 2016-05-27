@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Weather</string>
-    <string name="menu_setting">Setting</string>
+    <string name="setting_button">Setting</string>
+    <string name="image_view_icon">icon</string>
 </resources>

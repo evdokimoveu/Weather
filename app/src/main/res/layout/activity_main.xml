@@ -7,10 +7,93 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
+    android:background="@drawable/skynet"
     tools:context="com.evdokimoveu.weather.MainActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!" />
+    <android.support.v7.widget.Toolbar
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="@android:color/transparent"
+        android:layout_marginBottom="10dp"/>
+
+    <include
+        android:layout_width="fill_parent"
+        android:layout_height="50dp"
+        layout="@layout/toolbar"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Large Text"
+            android:textSize="35sp"
+            android:gravity="center"
+            android:textStyle="bold"
+            android:id="@+id/text_current_city"
+            android:layout_below="@+id/toolbar"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_marginLeft="25dp"
+            android:layout_marginStart="25dp" />
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="30dp"
+            android:paddingTop="30dp"
+            android:layout_alignParentBottom="true"
+            android:layout_below="@+id/text_current_city"
+            android:layout_alignLeft="@+id/text_current_city"
+            android:layout_alignStart="@+id/text_current_city">
+
+            <ImageView
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:id="@+id/icon_name"
+                android:contentDescription="@string/image_view_icon" />
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="end"
+                android:paddingRight="20dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textStyle="bold"
+                    android:textSize="40sp"
+                    android:id="@+id/temp_value"
+                    android:layout_marginBottom="20dp"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentStart="true" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="20sp"
+                    android:id="@+id/temp_min_max"
+                    android:layout_marginBottom="20dp"
+                    android:layout_below="@+id/temp_value"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentStart="true" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="20sp"
+                    android:id="@+id/weather_value"
+                    android:layout_marginBottom="20dp"
+                    android:layout_below="@+id/temp_min_max"
+                    android:layout_alignLeft="@+id/temp_min_max"
+                    android:layout_alignStart="@+id/temp_min_max" />
+            </RelativeLayout>
+        </LinearLayout>
+
 </RelativeLayout>
