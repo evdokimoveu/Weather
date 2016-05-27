@@ -8,7 +8,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -25,7 +24,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
@@ -45,7 +43,6 @@ public class MainActivity extends AppCompatActivity {
     private TextView tempMinMax;
     private TextView weatherDescription;
 
-    private Map<String, String> description;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,14 +56,7 @@ public class MainActivity extends AppCompatActivity {
         ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
         if(activeNetworkInfo == null){
-            Toast.makeText(this, "Ошибка подключения1", Toast.LENGTH_LONG).show();
-        }
-
-        description = new HashMap<>();
-        String des[]= getResources().getStringArray(R.array.descr);
-        for(int i = 0; i < des.length; i++){
-            String s[] = des[i].split("#");
-            description.put(s[0], s[1]);
+            Toast.makeText(this, "Ошибка соединения с интернетом", Toast.LENGTH_LONG).show();
         }
 
         setting = (ImageButton) findViewById(R.id.settingImgButton);
@@ -93,6 +83,24 @@ public class MainActivity extends AppCompatActivity {
 
         cityNameView.setText(cityName);
         startLoader(cityId);
+
+        new Thread() {
+            @Override
+            public void run() {
+                try {
+                    while (!isInterrupted()) {
+                        Thread.sleep(1800000);
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                startLoader(cityId);
+                            }
+                        });
+                    }
+                } catch (InterruptedException e) {
+                }
+            }
+        }.start();
     }
 
     @Override
@@ -118,8 +126,11 @@ public class MainActivity extends AppCompatActivity {
 
     private void startLoader(String id){
         String request = WeatherConfig.URL_WEATHER + "?id="+id+"&APPID="+WeatherConfig.KEY+"&"+WeatherConfig.CELSIUS;
+        String requestDaily = WeatherConfig.URL_DAILY + "?id="+id+"&APPID="+WeatherConfig.KEY+"&"+WeatherConfig.CELSIUS;
         LoadCurrentWeather weather = new LoadCurrentWeather(request);
+        LoadDailyTemp dailyTemp = new LoadDailyTemp(requestDaily);
         weather.execute();
+        dailyTemp.execute();
     }
 
     private class LoadCurrentWeather extends AsyncTask<String, Void, String>{
@@ -163,15 +174,63 @@ public class MainActivity extends AppCompatActivity {
                 JSONArray array = object.getJSONArray("weather");
                 for(int i = 0; i < array.length(); i++){
                     JSONObject weatherObject = array.getJSONObject(i);
-                    String str = description.get(weatherObject.getString("description"));
-                    weatherDescription.setText(str);
+                    weatherDescription.setText(weatherObject.getString("description"));
                     iconName = weatherObject.getString("icon");
                 }
 
                 JSONObject mainTemp = object.getJSONObject("main");
                 String strTemp = mainTemp.getString("temp") + (char) 0x00B0;
                 tempCurrent.setText(strTemp);
-                String strTempMinMax = mainTemp.getString("temp_max") + (char) 0x00B0 + " ..... "+ mainTemp.getString("temp_min") + (char) 0x00B0;
+                Picasso.with(MainActivity.this).load(WeatherConfig.URL_ICON + iconName + ".png").into(icon);
+
+            } catch (JSONException ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
+
+    private class LoadDailyTemp extends AsyncTask<String, Void, String>{
+        private String resultJson = "";
+        private String urlRequest;
+
+        public LoadDailyTemp(String urlRequest) {
+            this.urlRequest = urlRequest;
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+            StringBuffer buffer = new StringBuffer();
+
+            try {
+                URL url = new URL(urlRequest);
+                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                urlConnection.setRequestMethod("GET");
+                urlConnection.connect();
+
+                InputStream inputStream = urlConnection.getInputStream();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    buffer.append(line);
+                }
+                resultJson = buffer.toString();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return resultJson;
+        }
+
+        @Override
+        protected void onPostExecute(String strJson) {
+            super.onPostExecute(strJson);
+            try {
+                JSONObject object = new JSONObject(strJson);
+                JSONArray array = object.getJSONArray("list");
+                JSONObject listObject = array.getJSONObject(0);
+                JSONObject tempObject = listObject.getJSONObject("temp");
+
+                String strTempMinMax = tempObject.getString("max") + (char) 0x00B0 + " ..... "+ tempObject.getString("min") + (char) 0x00B0;
                 tempMinMax.setText(strTempMinMax);
                 Picasso.with(MainActivity.this).load(WeatherConfig.URL_ICON + iconName + ".png").into(icon);
 
